@@ -1,0 +1,759 @@
+{
+  "info": {
+    "name": "Software License Management API",
+    "description": "API tests for the license manager.\n\n1. Start the backend (`npm run dev` in the backend folder).\n2. Import this collection into Postman.\n3. Run **Auth / Login as user**, then the user requests.\n4. Run **Auth / Login as admin**, then the admin requests.\n\nLogin saves `token`. List requests save `softwareId`, `versionId`, `licenseId`, and `targetUserId` when the response contains them.\n\nSeed logins:\n- User: abc@gmail.com / Password123\n- Admin: admin@company.com / Password123",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000" },
+    { "key": "token", "value": "" },
+    { "key": "userToken", "value": "" },
+    { "key": "adminToken", "value": "" },
+    { "key": "userId", "value": "" },
+    { "key": "adminId", "value": "" },
+    { "key": "targetUserId", "value": "" },
+    { "key": "softwareId", "value": "" },
+    { "key": "versionId", "value": "" },
+    { "key": "licenseId", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{token}}", "type": "string" }
+    ]
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health check",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/health",
+            "description": "No login required."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"New User\",\n  \"email\": \"new.user@company.com\",\n  \"password\": \"Password123\",\n  \"confirm_password\": \"Password123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/auth/register",
+            "description": "Creates a user account and returns a token. Change the email if this account already exists."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.token) {",
+                  "  pm.collectionVariables.set('token', json.token);",
+                  "  pm.collectionVariables.set('userToken', json.token);",
+                  "  pm.collectionVariables.set('userId', json.user._id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as user",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"abc@gmail.com\",\n  \"password\": \"Password123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/auth/login",
+            "description": "Seed user. Saves the user token for later user requests."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.token) {",
+                  "  pm.collectionVariables.set('token', json.token);",
+                  "  pm.collectionVariables.set('userToken', json.token);",
+                  "  pm.collectionVariables.set('userId', json.user._id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as admin",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@company.com\",\n  \"password\": \"Password123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/auth/login",
+            "description": "Seed admin. Saves the admin token for later admin requests."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.token) {",
+                  "  pm.collectionVariables.set('token', json.token);",
+                  "  pm.collectionVariables.set('adminToken', json.token);",
+                  "  pm.collectionVariables.set('adminId', json.user._id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Current user",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/auth/me",
+            "description": "Uses the token saved by the last login."
+          }
+        },
+        {
+          "name": "Forgot password - check email",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"abc@gmail.com\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/auth/forgot-password",
+            "description": "Confirms the account exists. Does not change the password."
+          }
+        },
+        {
+          "name": "Forgot password - set new password",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"abc@gmail.com\",\n  \"new_password\": \"Password123\",\n  \"confirm_password\": \"Password123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/auth/forgot-password",
+            "description": "Sets a new password. This example keeps the seed password as Password123."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Profile",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const saved = pm.collectionVariables.get('userToken');",
+              "if (saved) pm.collectionVariables.set('token', saved);"
+            ]
+          }
+        }
+      ],
+      "item": [
+        {
+          "name": "Update my profile",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"John Doe\",\n  \"email\": \"abc@gmail.com\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/users/me",
+            "description": "Signed-in user only. Run Login as user first."
+          }
+        },
+        {
+          "name": "Update my password",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"current_password\": \"Password123\",\n  \"new_password\": \"Password123\",\n  \"confirm_password\": \"Password123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/users/me/password",
+            "description": "Password must be at least 8 characters and include letters and numbers."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Software",
+      "item": [
+        {
+          "name": "List software",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/software",
+            "description": "Any signed-in user. Saves the first software id and its latest version id."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (Array.isArray(data) && data[0]) {",
+                  "  pm.collectionVariables.set('softwareId', data[0]._id);",
+                  "  if (data[0].latest_version) pm.collectionVariables.set('versionId', data[0].latest_version._id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get software",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/software/{{softwareId}}",
+            "description": "Run List software first so softwareId is set."
+          }
+        },
+        {
+          "name": "Create software",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"software_name\": \"Postman Test Software\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/software",
+            "description": "Admin only. Run Login as admin first."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json._id) pm.collectionVariables.set('softwareId', json._id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update software",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"software_name\": \"Postman Test Software Updated\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/software/{{softwareId}}",
+            "description": "Admin only."
+          }
+        },
+        {
+          "name": "Remove software",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/software/{{softwareId}}",
+            "description": "Admin only. Hides the software. It is not erased from the database."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Versions",
+      "item": [
+        {
+          "name": "List versions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/versions",
+            "description": "Any signed-in user. Saves the first version id."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (Array.isArray(data) && data[0]) pm.collectionVariables.set('versionId', data[0]._id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create version",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"software\": \"{{softwareId}}\",\n  \"version_number\": \"v9.9.9\",\n  \"release_date\": \"2026-10-07\",\n  \"release_notes\": \"Test release created from Postman.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/versions",
+            "description": "Admin only. Version number must be unique. Run List software first."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json._id) pm.collectionVariables.set('versionId', json._id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete version",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/versions/{{versionId}}",
+            "description": "Admin only. Fails if a license already uses this version."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Licenses",
+      "item": [
+        {
+          "name": "My licenses",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const saved = pm.collectionVariables.get('userToken');",
+                  "if (saved) pm.collectionVariables.set('token', saved);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (Array.isArray(data) && data[0]) pm.collectionVariables.set('licenseId', data[0]._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/licenses/mine",
+            "description": "Signed-in user's own licenses. Run Login as user first."
+          }
+        },
+        {
+          "name": "Request a license",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const saved = pm.collectionVariables.get('userToken');",
+                  "if (saved) pm.collectionVariables.set('token', saved);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assigned_software\": \"{{softwareId}}\",\n  \"version_number\": \"{{versionId}}\",\n  \"reason\": \"Needed for project testing.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/licenses",
+            "description": "User only. Fails if this user already has a pending or approved license for the same software. Run List software first."
+          }
+        },
+        {
+          "name": "Cancel my license",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const saved = pm.collectionVariables.get('userToken');",
+                  "if (saved) pm.collectionVariables.set('token', saved);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/api/licenses/{{licenseId}}/cancel",
+            "description": "User only. The license must belong to the signed-in user and be Approved."
+          }
+        },
+        {
+          "name": "All license requests",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const saved = pm.collectionVariables.get('adminToken');",
+                  "if (saved) pm.collectionVariables.set('token', saved);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (!Array.isArray(data) || !data.length) return;",
+                  "const pending = data.find((item) => item.status === 'Pending') || data[0];",
+                  "pm.collectionVariables.set('licenseId', pending._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/licenses",
+            "description": "Admin only. Saves a pending license id when one exists."
+          }
+        },
+        {
+          "name": "Approve license",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const saved = pm.collectionVariables.get('adminToken');",
+                  "if (saved) pm.collectionVariables.set('token', saved);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Approved\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/licenses/{{licenseId}}/status",
+            "description": "Admin only. The license must be Pending. Approval lasts one year."
+          }
+        },
+        {
+          "name": "Reject license",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const saved = pm.collectionVariables.get('adminToken');",
+                  "if (saved) pm.collectionVariables.set('token', saved);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Rejected\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/licenses/{{licenseId}}/status",
+            "description": "Admin only. The license must be Pending."
+          }
+        },
+        {
+          "name": "Revoke license",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const saved = pm.collectionVariables.get('adminToken');",
+                  "if (saved) pm.collectionVariables.set('token', saved);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Expired\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/licenses/{{licenseId}}/status",
+            "description": "Admin only. The license must be Approved."
+          }
+        },
+        {
+          "name": "Delete license",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const saved = pm.collectionVariables.get('adminToken');",
+                  "if (saved) pm.collectionVariables.set('token', saved);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/licenses/{{licenseId}}",
+            "description": "Admin only. Removes the license record."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Feedback",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const saved = pm.collectionVariables.get('userToken');",
+              "if (saved) pm.collectionVariables.set('token', saved);"
+            ]
+          }
+        }
+      ],
+      "item": [
+        {
+          "name": "My feedback",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/feedback/mine",
+            "description": "Signed-in user's feedback. Run Login as user first."
+          }
+        },
+        {
+          "name": "Submit feedback",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": \"{{versionId}}\",\n  \"rating\": 5,\n  \"comments\": \"Works well for daily development.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/feedback",
+            "description": "One submission per user per version. Rating is a whole number from 1 to 5. Run List versions first."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "My notifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/notifications",
+            "description": "Notifications for the signed-in user. Login as user or admin first."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin users",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const saved = pm.collectionVariables.get('adminToken');",
+              "if (saved) pm.collectionVariables.set('token', saved);"
+            ]
+          }
+        }
+      ],
+      "item": [
+        {
+          "name": "List users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/users",
+            "description": "Admin only. Saves another user's id so later calls do not target the signed-in admin."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const data = pm.response.json();",
+                  "const adminId = pm.collectionVariables.get('adminId');",
+                  "if (!Array.isArray(data)) return;",
+                  "const other = data.find((user) => user._id !== adminId) || data[0];",
+                  "if (other) pm.collectionVariables.set('targetUserId', other._id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create user",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Postman User\",\n  \"email\": \"postman.user@company.com\",\n  \"role\": \"user\",\n  \"status\": \"active\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/users",
+            "description": "Admin only. The new account password is Password123."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json._id) pm.collectionVariables.set('targetUserId', json._id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update user",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Postman User Updated\",\n  \"email\": \"postman.user@company.com\",\n  \"role\": \"user\",\n  \"status\": \"active\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/users/{{targetUserId}}",
+            "description": "Admin only. An admin cannot change their own role or status."
+          }
+        },
+        {
+          "name": "Block user",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"blocked\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/users/{{targetUserId}}/status",
+            "description": "Admin only. An admin cannot block their own account."
+          }
+        },
+        {
+          "name": "Unblock user",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"active\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/users/{{targetUserId}}/status",
+            "description": "Admin only."
+          }
+        },
+        {
+          "name": "Delete user",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/users/{{targetUserId}}",
+            "description": "Admin only. Also deletes that user's licenses, feedback, and notifications. An admin cannot delete their own account."
+          }
+        }
+      ]
+    }
+  ]
+}
