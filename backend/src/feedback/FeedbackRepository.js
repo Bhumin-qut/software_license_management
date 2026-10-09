@@ -10,6 +10,12 @@ function findByUserAndVersion(userId, versionId) {
   return Feedback.findOne({ user: userId, version: versionId });
 }
 
+function findByVersionIds(versionIds) {
+  return Feedback.find({ version: { $in: versionIds } })
+    .populate('user', 'full_name email')
+    .sort({ created_at: -1 });
+}
+
 function create(data) {
   return Feedback.create(data);
 }
@@ -28,6 +34,7 @@ function deleteByUser(userId) {
 module.exports = {
   findByUser,
   findByUserAndVersion,
+  findByVersionIds,
   create,
   findByIdWithVersion,
   deleteByUser,

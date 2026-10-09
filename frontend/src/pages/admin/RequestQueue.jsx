@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../api';
-import { Alert, SearchBox, StatusBadge } from '../../components/ui';
+import { Message, SearchBox, StatusBadge } from '../../components/ui';
 import { formatLongDate } from '../../utils/format';
+import Button from 'react-bootstrap/Button';
+import Card from 'react-bootstrap/Card';
+import Table from 'react-bootstrap/Table';
 
 export default function RequestQueue() {
   const [items, setItems] = useState([]);
@@ -44,16 +47,16 @@ export default function RequestQueue() {
   });
 
   return (
-    <section className="data-card">
-      <div className="card-pad">
-        <div className="card-title"><h1>License Requests Queue</h1></div>
-        <Alert type="success">{success}</Alert>
-        <Alert>{error}</Alert>
+    <Card>
+      <Card.Body className="pb-0">
+        <h1 className="h4 mb-3">License Requests Queue</h1>
+        <Message type="success">{success}</Message>
+        <Message>{error}</Message>
         <SearchBox value={query} onChange={setQuery} placeholder="Filter by applicant, email, or software package..." />
-      </div>
-      <table>
+      </Card.Body>
+      <Table responsive hover className="mb-0 align-middle">
         <thead>
-          <tr>
+          <tr className="text-secondary small">
             <th>APPLICANT & EMAIL</th>
             <th>SOFTWARE PACKAGE</th>
             <th>VERSION</th>
@@ -67,33 +70,31 @@ export default function RequestQueue() {
           {visible.map((item) => (
             <tr key={item._id}>
               <td>
-                <div className="strong">{item.user?.full_name}</div>
-                <div className="secondary">{item.user?.email}</div>
+                <div className="fw-semibold">{item.user?.full_name}</div>
+                <div className="text-secondary small">{item.user?.email}</div>
               </td>
-              <td className="strong">{item.assigned_software?.software_name}</td>
+              <td className="fw-semibold">{item.assigned_software?.software_name}</td>
               <td>{item.version_number?.version_number || '—'}</td>
               <td>{formatLongDate(item.requested_at)}</td>
-              <td className="notes">{item.reason}</td>
+              <td>{item.reason}</td>
               <td><StatusBadge value={item.status.toUpperCase()} /></td>
-              <td>
-                <div className="actions">
-                  {item.status === 'Pending' ? (
-                    <>
-                      <button className="btn btn-outline btn-sm" type="button" onClick={() => setStatus(item._id, 'Approved')}>APPROVE</button>
-                      <button className="btn btn-muted btn-sm" type="button" onClick={() => setStatus(item._id, 'Rejected')}>REJECT</button>
-                    </>
-                  ) : null}
-                  {item.status === 'Approved' ? (
-                    <button className="btn btn-muted btn-sm" type="button" onClick={() => setStatus(item._id, 'Expired')}>REVOKE</button>
-                  ) : null}
-                  <button className="btn btn-danger btn-sm" type="button" onClick={() => remove(item._id)}>DELETE</button>
-                </div>
+              <td className="text-end text-nowrap">
+                {item.status === 'Pending' ? (
+                  <>
+                    <Button variant="outline-primary" size="sm" className="me-2" type="button" onClick={() => setStatus(item._id, 'Approved')}>APPROVE</Button>
+                    <Button variant="outline-secondary" size="sm" className="me-2" type="button" onClick={() => setStatus(item._id, 'Rejected')}>REJECT</Button>
+                  </>
+                ) : null}
+                {item.status === 'Approved' ? (
+                  <Button variant="outline-secondary" size="sm" className="me-2" type="button" onClick={() => setStatus(item._id, 'Expired')}>REVOKE</Button>
+                ) : null}
+                <Button variant="outline-danger" size="sm" type="button" onClick={() => remove(item._id)}>DELETE</Button>
               </td>
             </tr>
           ))}
         </tbody>
-      </table>
-      {visible.length === 0 ? <p className="empty">No requests match your search.</p> : null}
-    </section>
+      </Table>
+      {visible.length === 0 ? <p className="text-center text-secondary py-4 mb-0">No requests match your search.</p> : null}
+    </Card>
   );
 }

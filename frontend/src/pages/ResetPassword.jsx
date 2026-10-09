@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api';
-import { Alert } from '../components/ui';
+import { Message } from '../components/ui';
+import Button from 'react-bootstrap/Button';
+import Card from 'react-bootstrap/Card';
+import Col from 'react-bootstrap/Col';
+import Form from 'react-bootstrap/Form';
+import Row from 'react-bootstrap/Row';
 
 export default function ResetPassword() {
   const [step, setStep] = useState('email');
@@ -45,43 +50,45 @@ export default function ResetPassword() {
   }
 
   return (
-    <section className="auth-card">
-      {step === 'email' ? (
-        <form onSubmit={findAccount}>
-          <h2>Reset Password</h2>
-          <p className="subtitle">We will send you a reset link</p>
-          <Alert>{error}</Alert>
-          <div className="field">
-            <label htmlFor="email">Email Address</label>
-            <input id="email" type="email" placeholder="name@company.com" value={email} onChange={(event) => setEmail(event.target.value)} required />
-          </div>
-          <button className="btn btn-primary btn-block" type="submit" disabled={busy}>Send Reset Link</button>
-        </form>
-      ) : null}
-      {step === 'password' ? (
-        <form onSubmit={savePassword}>
-          <h2>Reset Password</h2>
-          <p className="subtitle">Choose a new password for {email}</p>
-          <Alert>{error}</Alert>
-          <div className="field">
-            <label htmlFor="password">New Password</label>
-            <input id="password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} required />
-          </div>
-          <div className="field">
-            <label htmlFor="confirm">Confirm Password</label>
-            <input id="confirm" type="password" value={confirm} onChange={(event) => setConfirm(event.target.value)} required />
-          </div>
-          <p className="hint">Must be at least 8 characters with a mix of letters and numbers.</p>
-          <button className="btn btn-primary btn-block" type="submit" disabled={busy} style={{ marginTop: 16 }}>Update Password</button>
-        </form>
-      ) : null}
-      {step === 'done' ? (
-        <div className="auth-body">
-          <h2>Reset Password</h2>
-          <Alert type="success">{success}</Alert>
-        </div>
-      ) : null}
-      <div className="auth-foot"><Link to="/login">Back to Sign In</Link></div>
-    </section>
+    <Row className="justify-content-center">
+      <Col md={7} lg={5}>
+        <Card>
+          <Card.Body className="p-4">
+            <h2 className="h3 text-center text-primary">Reset Password</h2>
+            {step === 'email' ? (
+              <Form onSubmit={findAccount}>
+                <p className="text-center text-secondary">We will send you a reset link</p>
+                <Message>{error}</Message>
+                <Form.Group className="mb-3" controlId="email">
+                  <Form.Label>Email Address</Form.Label>
+                  <Form.Control type="email" placeholder="name@company.com" value={email} onChange={(event) => setEmail(event.target.value)} required />
+                </Form.Group>
+                <Button type="submit" className="w-100" disabled={busy}>Send Reset Link</Button>
+              </Form>
+            ) : null}
+            {step === 'password' ? (
+              <Form onSubmit={savePassword}>
+                <p className="text-center text-secondary">Choose a new password for {email}</p>
+                <Message>{error}</Message>
+                <Form.Group className="mb-3" controlId="password">
+                  <Form.Label>New Password</Form.Label>
+                  <Form.Control type="password" value={password} onChange={(event) => setPassword(event.target.value)} required />
+                </Form.Group>
+                <Form.Group className="mb-3" controlId="confirm">
+                  <Form.Label>Confirm Password</Form.Label>
+                  <Form.Control type="password" value={confirm} onChange={(event) => setConfirm(event.target.value)} required />
+                  <Form.Text className="text-secondary">Must be at least 8 characters with a mix of letters and numbers.</Form.Text>
+                </Form.Group>
+                <Button type="submit" className="w-100" disabled={busy}>Update Password</Button>
+              </Form>
+            ) : null}
+            {step === 'done' ? <Message type="success">{success}</Message> : null}
+          </Card.Body>
+          <Card.Footer className="text-center bg-light">
+            <Link to="/login">Back to Sign In</Link>
+          </Card.Footer>
+        </Card>
+      </Col>
+    </Row>
   );
 }

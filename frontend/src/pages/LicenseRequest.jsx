@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api';
-import { Alert } from '../components/ui';
+import { Message } from '../components/ui';
+import Button from 'react-bootstrap/Button';
+import Card from 'react-bootstrap/Card';
+import Col from 'react-bootstrap/Col';
+import Form from 'react-bootstrap/Form';
+import Row from 'react-bootstrap/Row';
 
 export default function LicenseRequest() {
   const { id } = useParams();
@@ -37,42 +42,48 @@ export default function LicenseRequest() {
   }
 
   return (
-    <div className="center-wrap">
-      <form className="panel centered wide" onSubmit={onSubmit}>
-        <h2>New Software License Request</h2>
-        <div style={{ height: 18 }} />
-        <Alert>{error}</Alert>
-        {!software ? <p className="empty">Loading software...</p> : null}
-        {software ? (
-          <>
-            <div className="field">
-              <div className="label">Software Title</div>
-              <div className="static-value">{software.software_name}</div>
-            </div>
-            <div className="field">
-              <div className="label">Preferred Version</div>
-              <div className="static-value">{software.latest_version?.version_number || '—'}</div>
-            </div>
-            <div className="field">
-              <div className="field-label-row">
-                <label htmlFor="reason">Business Reason / Justification</label>
-                <span className="count">{reason.length} / 500</span>
-              </div>
-              <textarea
-                id="reason"
-                maxLength={500}
-                placeholder="Please explain your project requirement and why this software license is needed..."
-                value={reason}
-                onChange={(event) => setReason(event.target.value)}
-                required
-              />
-            </div>
-            <button className="btn btn-primary btn-block" type="submit" disabled={busy || !software.latest_version}>
-              {busy ? 'Submitting...' : 'Submit License Request'}
-            </button>
-          </>
-        ) : null}
-      </form>
-    </div>
+    <Row className="justify-content-center">
+      <Col lg={7}>
+        <Card>
+          <Card.Body className="p-4">
+            <h2 className="h3 text-center text-primary mb-4">New Software License Request</h2>
+            <Form onSubmit={onSubmit}>
+              <Message>{error}</Message>
+              {!software ? <p className="text-center text-secondary">Loading software...</p> : null}
+              {software ? (
+                <>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Software Title</Form.Label>
+                    <div className="fw-semibold">{software.software_name}</div>
+                  </Form.Group>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Preferred Version</Form.Label>
+                    <div className="fw-semibold">{software.latest_version?.version_number || '—'}</div>
+                  </Form.Group>
+                  <Form.Group className="mb-3" controlId="reason">
+                    <div className="d-flex justify-content-between">
+                      <Form.Label>Business Reason / Justification</Form.Label>
+                      <span className="text-secondary small">{reason.length} / 500</span>
+                    </div>
+                    <Form.Control
+                      as="textarea"
+                      rows={5}
+                      maxLength={500}
+                      placeholder="Please explain your project requirement and why this software license is needed..."
+                      value={reason}
+                      onChange={(event) => setReason(event.target.value)}
+                      required
+                    />
+                  </Form.Group>
+                  <Button type="submit" className="w-100" disabled={busy || !software.latest_version}>
+                    {busy ? 'Submitting...' : 'Submit License Request'}
+                  </Button>
+                </>
+              ) : null}
+            </Form>
+          </Card.Body>
+        </Card>
+      </Col>
+    </Row>
   );
 }

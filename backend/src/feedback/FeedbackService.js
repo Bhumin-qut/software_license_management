@@ -6,6 +6,12 @@ function listForUser(userId) {
   return FeedbackRepository.findByUser(userId);
 }
 
+async function listForSoftware(softwareId) {
+  const versions = await VersionRepository.findBySoftware(softwareId);
+  if (!versions.length) return [];
+  return FeedbackRepository.findByVersionIds(versions.map((version) => version._id));
+}
+
 async function create(user, body) {
   const versionId = body.version;
   const comments = String(body.comments || '').trim();
@@ -33,4 +39,4 @@ async function create(user, body) {
   return FeedbackRepository.findByIdWithVersion(feedback._id);
 }
 
-module.exports = { listForUser, create };
+module.exports = { listForUser, listForSoftware, create };

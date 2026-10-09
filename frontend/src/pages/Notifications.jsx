@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
-import { Alert, PageHeader } from '../components/ui';
+import { Message, PageHeader } from '../components/ui';
 import { formatNotificationTime } from '../utils/format';
+import Card from 'react-bootstrap/Card';
 
 export default function Notifications() {
   const [items, setItems] = useState([]);
@@ -14,14 +15,22 @@ export default function Notifications() {
   return (
     <section>
       <PageHeader title="Notifications" />
-      <Alert>{error}</Alert>
+      <Message>{error}</Message>
       {items.map((item) => (
-        <article className="note" key={item._id}>
-          <p><span className="k">MESSAGE:</span> {item.message}</p>
-          <p className="meta"><span className="k">CREATED AT:</span> {formatNotificationTime(item.created_at)}</p>
-        </article>
+        <Card className="mb-3" key={item._id}>
+          <Card.Body>
+            <p className="mb-2">
+              <span className="text-secondary small fw-semibold me-2">MESSAGE:</span>
+              {item.message}
+            </p>
+            <p className="text-secondary mb-0">
+              <span className="small fw-semibold me-2">CREATED AT:</span>
+              {formatNotificationTime(item.created_at)}
+            </p>
+          </Card.Body>
+        </Card>
       ))}
-      {items.length === 0 && !error ? <p className="empty">No notifications yet.</p> : null}
+      {items.length === 0 && !error ? <p className="text-center text-secondary py-4 mb-0">No notifications yet.</p> : null}
     </section>
   );
 }

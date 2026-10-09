@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { api } from '../../api';
-import { Alert, PageHeader, SearchBox } from '../../components/ui';
+import { Message, PageHeader, SearchBox } from '../../components/ui';
 import { formatDate } from '../../utils/format';
+import Button from 'react-bootstrap/Button';
+import Card from 'react-bootstrap/Card';
+import Table from 'react-bootstrap/Table';
 
 export default function VersionList() {
   const location = useLocation();
@@ -36,16 +39,16 @@ export default function VersionList() {
 
   return (
     <section>
-      <PageHeader title="Published Versions" action={<Link className="btn btn-primary" to="/admin/versions/new">+ Add Version</Link>} />
-      <Alert type="success">{success}</Alert>
-      <Alert>{error}</Alert>
-      <div className="data-card">
-        <div className="card-pad">
+      <PageHeader title="Published Versions" action={<Button as={Link} to="/admin/versions/new">+ Add Version</Button>} />
+      <Message type="success">{success}</Message>
+      <Message>{error}</Message>
+      <Card>
+        <Card.Body className="pb-0">
           <SearchBox label="SEARCH:" value={query} onChange={setQuery} placeholder="Search by software name, version, or release notes..." />
-        </div>
-        <table>
+        </Card.Body>
+        <Table responsive hover className="mb-0 align-middle">
           <thead>
-            <tr>
+            <tr className="text-secondary small">
               <th>SOFTWARE NAME</th>
               <th>VERSION</th>
               <th>RELEASE DATE</th>
@@ -56,17 +59,19 @@ export default function VersionList() {
           <tbody>
             {visible.map((item) => (
               <tr key={item._id}>
-                <td className="strong">{item.software?.software_name}</td>
+                <td className="fw-semibold">{item.software?.software_name}</td>
                 <td>{item.version_number}</td>
                 <td>{formatDate(item.release_date)}</td>
-                <td className="notes">{item.release_notes}</td>
-                <td><div className="actions"><button className="btn btn-danger btn-sm" type="button" onClick={() => remove(item)}>Delete</button></div></td>
+                <td>{item.release_notes}</td>
+                <td className="text-end">
+                  <Button variant="outline-danger" size="sm" type="button" onClick={() => remove(item)}>Delete</Button>
+                </td>
               </tr>
             ))}
           </tbody>
-        </table>
-        {visible.length === 0 ? <p className="empty">No versions match your search.</p> : null}
-      </div>
+        </Table>
+        {visible.length === 0 ? <p className="text-center text-secondary py-4 mb-0">No versions match your search.</p> : null}
+      </Card>
     </section>
   );
 }

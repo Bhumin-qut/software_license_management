@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api';
-import { Alert, PageHeader, SearchBox } from '../components/ui';
+import { Message, PageHeader, SearchBox } from '../components/ui';
+import Button from 'react-bootstrap/Button';
+import Card from 'react-bootstrap/Card';
+import Col from 'react-bootstrap/Col';
+import Row from 'react-bootstrap/Row';
 
 export default function AvailableSoftware() {
   const [items, setItems] = useState([]);
@@ -17,23 +21,31 @@ export default function AvailableSoftware() {
   return (
     <section>
       <PageHeader title="Available Software" />
-      <Alert>{error}</Alert>
+      <Message>{error}</Message>
       <SearchBox value={query} onChange={setQuery} placeholder="Search software by name or category..." />
-      <div className="catalog-grid">
+      <Row xs={1} md={2} lg={3} className="g-3">
         {visible.map((item) => (
-          <article className="soft-card" key={item._id}>
-            <h2>{item.software_name}</h2>
-            <div className="ver">Version: {item.latest_version?.version_number || 'Not published'}</div>
-            <p>{item.latest_version?.release_notes || 'A published version is not available yet.'}</p>
-            {item.latest_version ? (
-              <Link className="btn btn-primary btn-block" to={`/software/${item._id}/request`}>Request License</Link>
-            ) : (
-              <button className="btn btn-primary btn-block" type="button" disabled>Request License</button>
-            )}
-          </article>
+          <Col key={item._id}>
+            <Card className="h-100">
+              <Card.Body className="d-flex flex-column">
+                <Card.Title>{item.software_name}</Card.Title>
+                <Card.Subtitle className="mb-2 text-secondary">
+                  Version: {item.latest_version?.version_number || 'Not published'}
+                </Card.Subtitle>
+                <Card.Text className="flex-grow-1">
+                  {item.latest_version?.release_notes || 'A published version is not available yet.'}
+                </Card.Text>
+                {item.latest_version ? (
+                  <Button as={Link} to={`/software/${item._id}/request`}>Request License</Button>
+                ) : (
+                  <Button type="button" disabled>Request License</Button>
+                )}
+              </Card.Body>
+            </Card>
+          </Col>
         ))}
-      </div>
-      {!error && visible.length === 0 ? <p className="empty">No software matches your search.</p> : null}
+      </Row>
+      {!error && visible.length === 0 ? <p className="text-center text-secondary py-4 mb-0">No software matches your search.</p> : null}
     </section>
   );
 }

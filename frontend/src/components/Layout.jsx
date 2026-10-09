@@ -1,5 +1,10 @@
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import Container from 'react-bootstrap/Container';
+import Nav from 'react-bootstrap/Nav';
+import Navbar from 'react-bootstrap/Navbar';
+import Button from 'react-bootstrap/Button';
+import Spinner from 'react-bootstrap/Spinner';
 
 const userLinks = [
   { to: '/software', label: 'Available Software' },
@@ -21,45 +26,57 @@ export default function Layout() {
   const { user, loading, logout } = useAuth();
   const navigate = useNavigate();
 
-  if (loading) return <div className="page-loading">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="min-vh-100 d-flex align-items-center justify-content-center text-secondary">
+        <Spinner animation="border" size="sm" className="me-2" />
+        Loading...
+      </div>
+    );
+  }
 
   const links = user ? (user.role === 'admin' ? adminLinks : userLinks) : [];
 
   return (
-    <div className="app-frame">
-      <header className="topbar">
-        <Link to="/" className="brand">License Manager</Link>
-        <nav className="nav">
-          {links.map((link) => (
-            <NavLink key={link.to} to={link.to} className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
-              {link.label}
-            </NavLink>
-          ))}
-          {user ? (
-            <button
-              className="nav-button"
-              type="button"
-              onClick={() => {
-                logout();
-                navigate('/login');
-              }}
-            >
-              Logout
-            </button>
-          ) : (
-            <>
-              <Link to="/login" className="nav-button">Sign In</Link>
-              <Link to="/register" className="btn btn-outline btn-sm">Create Account</Link>
-            </>
-          )}
-        </nav>
-      </header>
-      <main>
-        <div className="shell">
+    <div className="d-flex flex-column min-vh-100 bg-light">
+      <Navbar bg="white" expand="lg" className="border-bottom sticky-top">
+        <Container>
+          <Navbar.Brand as={Link} to="/" className="text-primary fw-bold">License Manager</Navbar.Brand>
+          <Navbar.Toggle aria-controls="main-nav" />
+          <Navbar.Collapse id="main-nav">
+            <Nav className="ms-auto align-items-lg-center">
+              {links.map((link) => (
+                <Nav.Link key={link.to} as={NavLink} to={link.to}>{link.label}</Nav.Link>
+              ))}
+              {user ? (
+                <Button
+                  variant="link"
+                  className="nav-link"
+                  onClick={() => {
+                    logout();
+                    navigate('/login');
+                  }}
+                >
+                  Logout
+                </Button>
+              ) : (
+                <>
+                  <Nav.Link as={Link} to="/login">Sign In</Nav.Link>
+                  <Button as={Link} to="/register" variant="outline-primary" size="sm" className="ms-lg-2">Create Account</Button>
+                </>
+              )}
+            </Nav>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
+      <main className="flex-grow-1 py-4">
+        <Container>
           <Outlet />
-        </div>
+        </Container>
       </main>
-      <footer className="footer">License Manager © {new Date().getFullYear()}. All rights reserved.</footer>
+      <footer className="text-center text-secondary py-3 border-top bg-white">
+        License Manager © {new Date().getFullYear()}. All rights reserved.
+      </footer>
     </div>
   );
 }

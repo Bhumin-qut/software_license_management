@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../api';
-import { Alert, PageHeader, SearchBox, StatusBadge } from '../../components/ui';
+import { Message, PageHeader, SearchBox, StatusBadge } from '../../components/ui';
+import Button from 'react-bootstrap/Button';
+import Card from 'react-bootstrap/Card';
+import Col from 'react-bootstrap/Col';
+import Form from 'react-bootstrap/Form';
+import Row from 'react-bootstrap/Row';
+import Stack from 'react-bootstrap/Stack';
+import Table from 'react-bootstrap/Table';
 
 const empty = { full_name: '', email: '', role: 'user', status: 'active' };
 
@@ -83,57 +90,67 @@ export default function UserDirectory() {
 
   if (mode) {
     return (
-      <div className="center-wrap">
-        <form className="panel wide" onSubmit={save}>
-          <div className="panel-head">
-            <h2>{mode === 'add' ? 'Add New User' : 'Edit User'}</h2>
-            <button className="icon-btn" type="button" onClick={() => setMode(null)} aria-label="Close">×</button>
-          </div>
-          <Alert>{error}</Alert>
-          <div className="field">
-            <label htmlFor="full_name">Full Name</label>
-            <input id="full_name" name="full_name" placeholder="e.g. John Doe" value={form.full_name} onChange={update} required />
-          </div>
-          <div className="field">
-            <label htmlFor="email">Email Address</label>
-            <input id="email" name="email" type="email" placeholder="name@company.com" value={form.email} onChange={update} required />
-          </div>
-          <div className="form-row">
-            <div className="field">
-              <label htmlFor="role">Role</label>
-              <select id="role" name="role" value={form.role} onChange={update}>
-                <option value="user">USER</option>
-                <option value="admin">ADMIN</option>
-              </select>
-            </div>
-            <div className="field">
-              <label htmlFor="status">Status</label>
-              <select id="status" name="status" value={form.status} onChange={update}>
-                <option value="active">ACTIVE</option>
-                <option value="blocked">BLOCKED</option>
-              </select>
-            </div>
-          </div>
-          {mode === 'add' ? <p className="hint">New users sign in with the temporary password Password123.</p> : null}
-          <div className="form-actions">
-            <button className="btn btn-muted" type="button" onClick={() => setMode(null)}>Cancel</button>
-            <button className="btn btn-primary" type="submit" disabled={busy}>{mode === 'add' ? 'Save User' : 'Save Changes'}</button>
-          </div>
-        </form>
-      </div>
+      <Row className="justify-content-center">
+        <Col lg={7}>
+          <Card>
+            <Card.Body className="p-4">
+              <Stack direction="horizontal" className="justify-content-between mb-3">
+                <h2 className="h4 mb-0">{mode === 'add' ? 'Add New User' : 'Edit User'}</h2>
+                <Button variant="link" className="text-secondary fs-4 p-0" type="button" onClick={() => setMode(null)} aria-label="Close">×</Button>
+              </Stack>
+              <Form onSubmit={save}>
+                <Message>{error}</Message>
+                <Form.Group className="mb-3" controlId="full_name">
+                  <Form.Label>Full Name</Form.Label>
+                  <Form.Control name="full_name" placeholder="e.g. John Doe" value={form.full_name} onChange={update} required />
+                </Form.Group>
+                <Form.Group className="mb-3" controlId="email">
+                  <Form.Label>Email Address</Form.Label>
+                  <Form.Control name="email" type="email" placeholder="name@company.com" value={form.email} onChange={update} required />
+                </Form.Group>
+                <Row>
+                  <Col md={6}>
+                    <Form.Group className="mb-3" controlId="role">
+                      <Form.Label>Role</Form.Label>
+                      <Form.Select name="role" value={form.role} onChange={update}>
+                        <option value="user">USER</option>
+                        <option value="admin">ADMIN</option>
+                      </Form.Select>
+                    </Form.Group>
+                  </Col>
+                  <Col md={6}>
+                    <Form.Group className="mb-3" controlId="status">
+                      <Form.Label>Status</Form.Label>
+                      <Form.Select name="status" value={form.status} onChange={update}>
+                        <option value="active">ACTIVE</option>
+                        <option value="blocked">BLOCKED</option>
+                      </Form.Select>
+                    </Form.Group>
+                  </Col>
+                </Row>
+                {mode === 'add' ? <p className="text-secondary small">New users sign in with the temporary password Password123.</p> : null}
+                <div className="d-flex justify-content-end gap-2">
+                  <Button variant="outline-secondary" type="button" onClick={() => setMode(null)}>Cancel</Button>
+                  <Button type="submit" disabled={busy}>{mode === 'add' ? 'Save User' : 'Save Changes'}</Button>
+                </div>
+              </Form>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
     );
   }
 
   return (
     <section>
-      <PageHeader title="User Accounts Directory" action={<button className="btn btn-primary" type="button" onClick={openAdd}>Add New User</button>} />
-      <Alert type="success">{success}</Alert>
-      <Alert>{error}</Alert>
+      <PageHeader title="User Accounts Directory" action={<Button type="button" onClick={openAdd}>Add New User</Button>} />
+      <Message type="success">{success}</Message>
+      <Message>{error}</Message>
       <SearchBox value={query} onChange={setQuery} placeholder="Search users by name, email, or identifier..." />
-      <div className="data-card">
-        <table>
+      <Card>
+        <Table responsive hover className="mb-0 align-middle">
           <thead>
-            <tr>
+            <tr className="text-secondary small">
               <th>FULL NAME</th>
               <th>EMAIL ADDRESS</th>
               <th>ROLE</th>
@@ -144,25 +161,23 @@ export default function UserDirectory() {
           <tbody>
             {visible.map((user) => (
               <tr key={user._id}>
-                <td className="strong">{user.full_name}</td>
-                <td className="secondary">{user.email}</td>
-                <td className="strong">{user.role === 'admin' ? 'Admin' : 'User'}</td>
+                <td className="fw-semibold">{user.full_name}</td>
+                <td className="text-secondary">{user.email}</td>
+                <td className="fw-semibold">{user.role === 'admin' ? 'Admin' : 'User'}</td>
                 <td><StatusBadge value={user.status === 'blocked' ? 'BLOCKED' : 'ACTIVE'} /></td>
-                <td>
-                  <div className="actions">
-                    <button className="btn btn-muted btn-sm" type="button" onClick={() => openEdit(user)}>Edit</button>
-                    <button className={`btn btn-sm ${user.status === 'blocked' ? 'btn-ok' : 'btn-warn'}`} type="button" onClick={() => toggleStatus(user)}>
-                      {user.status === 'blocked' ? 'Unblock' : 'Block'}
-                    </button>
-                    <button className="btn btn-danger btn-sm" type="button" onClick={() => remove(user)}>Delete</button>
-                  </div>
+                <td className="text-end text-nowrap">
+                  <Button variant="outline-secondary" size="sm" className="me-2" type="button" onClick={() => openEdit(user)}>Edit</Button>
+                  <Button variant={user.status === 'blocked' ? 'outline-success' : 'outline-warning'} size="sm" className="me-2" type="button" onClick={() => toggleStatus(user)}>
+                    {user.status === 'blocked' ? 'Unblock' : 'Block'}
+                  </Button>
+                  <Button variant="outline-danger" size="sm" type="button" onClick={() => remove(user)}>Delete</Button>
                 </td>
               </tr>
             ))}
           </tbody>
-        </table>
-        {visible.length === 0 ? <p className="empty">No users match your search.</p> : null}
-      </div>
+        </Table>
+        {visible.length === 0 ? <p className="text-center text-secondary py-4 mb-0">No users match your search.</p> : null}
+      </Card>
     </section>
   );
 }

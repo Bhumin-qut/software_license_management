@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { api } from '../api';
-import { Alert, PageHeader, SearchBox, StatusBadge } from '../components/ui';
+import { Message, PageHeader, SearchBox, StatusBadge } from '../components/ui';
 import { formatDate } from '../utils/format';
+import Button from 'react-bootstrap/Button';
+import Card from 'react-bootstrap/Card';
+import Table from 'react-bootstrap/Table';
 
 const labels = { Approved: 'Active', Pending: 'Pending', Rejected: 'Rejected', Expired: 'Expired' };
 
@@ -43,15 +46,15 @@ export default function LicenseHistory() {
   return (
     <section>
       <PageHeader title="My Software License History" />
-      <Alert type="success">{success}</Alert>
-      <Alert>{error}</Alert>
-      <div className="data-card">
-        <div className="card-pad">
+      <Message type="success">{success}</Message>
+      <Message>{error}</Message>
+      <Card>
+        <Card.Body className="pb-0">
           <SearchBox label="SEARCH:" value={query} onChange={setQuery} placeholder="Search by product, version, or status..." />
-        </div>
-        <table>
+        </Card.Body>
+        <Table responsive hover className="mb-0 align-middle">
           <thead>
-            <tr>
+            <tr className="text-secondary small">
               <th>SOFTWARE NAME</th>
               <th>VERSION</th>
               <th>REQUESTED</th>
@@ -70,29 +73,27 @@ export default function LicenseHistory() {
                 : '';
               return (
                 <tr key={item._id}>
-                  <td className="strong">{item.assigned_software?.software_name}</td>
+                  <td className="fw-semibold">{item.assigned_software?.software_name}</td>
                   <td>{version || '—'}</td>
                   <td>{formatDate(item.requested_at)}</td>
                   <td>{item.status === 'Pending' ? 'Pending Review' : formatDate(item.reviewed_at)}</td>
                   <td>{item.status === 'Pending' || item.status === 'Rejected' ? '—' : formatDate(item.expires_at)}</td>
                   <td><StatusBadge value={label} /></td>
-                  <td>
-                    <div className="actions">
-                      {item.status === 'Approved' ? (
-                        <button className="btn btn-danger btn-sm" type="button" onClick={() => cancel(item._id)}>Cancel Subscription</button>
-                      ) : null}
-                      {feedbackTo && item.status !== 'Pending' ? (
-                        <Link className="btn btn-outline btn-sm" to={feedbackTo}>Give Feedback</Link>
-                      ) : null}
-                    </div>
+                  <td className="text-end text-nowrap">
+                    {item.status === 'Approved' ? (
+                      <Button variant="outline-danger" size="sm" className="me-2" type="button" onClick={() => cancel(item._id)}>Cancel Subscription</Button>
+                    ) : null}
+                    {feedbackTo && item.status !== 'Pending' ? (
+                      <Button as={Link} to={feedbackTo} variant="outline-primary" size="sm">Give Feedback</Button>
+                    ) : null}
                   </td>
                 </tr>
               );
             })}
           </tbody>
-        </table>
-        {visible.length === 0 ? <p className="empty">No licenses match your search.</p> : null}
-      </div>
+        </Table>
+        {visible.length === 0 ? <p className="text-center text-secondary py-4 mb-0">No licenses match your search.</p> : null}
+      </Card>
     </section>
   );
 }

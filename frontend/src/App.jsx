@@ -12,6 +12,7 @@ import PastFeedback from './pages/PastFeedback';
 import Notifications from './pages/Notifications';
 import Profile from './pages/Profile';
 import SoftwareInventory from './pages/admin/SoftwareInventory';
+import ViewSoftwareInventory from './pages/admin/ViewSoftwareInventory';
 import VersionList from './pages/admin/VersionList';
 import CreateVersion from './pages/admin/CreateVersion';
 import UserDirectory from './pages/admin/UserDirectory';
@@ -59,6 +60,7 @@ export default function App() {
         <Route path="/notifications" element={<RequireAuth><Notifications /></RequireAuth>} />
 
         <Route path="/admin/software" element={<RequireAuth role="admin"><SoftwareInventory /></RequireAuth>} />
+        <Route path="/admin/software/:id" element={<RequireAuth role="admin"><ViewSoftwareInventory /></RequireAuth>} />
         <Route path="/admin/versions" element={<RequireAuth role="admin"><VersionList /></RequireAuth>} />
         <Route path="/admin/versions/new" element={<RequireAuth role="admin"><CreateVersion /></RequireAuth>} />
         <Route path="/admin/users" element={<RequireAuth role="admin"><UserDirectory /></RequireAuth>} />
