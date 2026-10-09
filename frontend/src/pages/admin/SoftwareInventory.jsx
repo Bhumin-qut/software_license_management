@@ -80,7 +80,6 @@ export default function SoftwareInventory() {
             <Card.Body className="p-4">
               <Stack direction="horizontal" className="justify-content-between mb-3">
                 <h2 className="h4 mb-0">{mode === 'add' ? 'Add New Software' : 'Edit Software'}</h2>
-                <Button variant="link" className="text-secondary fs-4 p-0" type="button" onClick={() => setMode(null)} aria-label="Close">×</Button>
               </Stack>
               <Form onSubmit={save}>
                 <Message>{error}</Message>
